@@ -13,7 +13,7 @@ const Account = require('../models/account');
  * @param next
  */
 exports.getRegister = (req, res, next) => {
-    res.render('register', {
+    res.render('registration', {
         pageTitle: 'Registration',
         path: '/admin/register',
     });
@@ -44,11 +44,35 @@ exports.postRegister = (req, res, next) => {
  */
 exports.getAccounts = (req, res, next) => {
     let accounts = Account.fetchAll();
-    res.render('registration', {
+    res.render('login', {
         accounts: accounts,
         pageTitle: 'Login',
         path: '/',
         hasProducts: accounts.length > 0
     });
 
+};
+
+exports.getRegisterPassword = (req, res, next) => {
+    res.render('register-password', {
+        pageTitle: 'Registration',
+        path: '/admin/register-password',
+    });
+};
+
+/**
+ * handles the post request from the add product page.
+ * redirects to the home page to show all products.
+ * @param req
+ * @param res
+ * @param next
+ */
+exports.postRegisterPassword = (req, res, next) => {
+    try {
+        const account = new Account(req.body.email, req.body.name, req.body.password);
+        account.save();
+        res.redirect('/');
+    } catch (err) {
+        // TO DO! we must handle the error here and generate a EJS page to display the error.
+    }
 };
