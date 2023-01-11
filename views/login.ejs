@@ -5,6 +5,8 @@
 <body>
 <main>
     <form class="account-form" action="/admin/register" method="POST">
+        <%- include('includes/icon.ejs') %>
+        <h3 style="text-align: center">Please sign in</h3>
         <div class="form-control">
             <label for="email">Email</label>
             <input type="text" name="email" id="email" maxlength="32" required>
@@ -17,5 +19,4 @@
         </div>
     </form>
 </main>
-</body>
 <%- include('includes/end.ejs') %>
