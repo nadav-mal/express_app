@@ -1,4 +1,4 @@
-const Cookies = require('cookies')
+//const Cookies = require('cookies')
 /** A MODULE to manage the Product model.
  * in future examples, we will use a database to store data.
  */
@@ -8,7 +8,7 @@ module.exports = class Account {
         this.req = req;
         this.res = res;
     }
-
+//kop
     /** Save the product to a file.
      * @throws {Error} if the product already exists or if the product has no title.
      * */
