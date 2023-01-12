@@ -1,7 +1,7 @@
 <%- include('includes/head.ejs') %>
 <link rel="stylesheet" href="/css/forms.css">
 
-<script src="js/main.js"></script>
+
 </head>
 
 <body>
@@ -12,13 +12,14 @@
             <div class="form-control">
                 <label for="email">Email</label>
                 <input class="inputTypes" type="text" name="email" id="email" maxlength="32" required>
-                <label for="first-name">First name</label>
-                <input class="inputTypes" type="text" name="first-name" id="first-name" minlength="3" maxlength="32" required>
-                <label for="last-name">Last name</label>
-                <input class="inputTypes" type="text" name="last-name" id="last-name" minlength="3" maxlength="32" required>
-                <a href="/admin/register-password" class="btn btn-primary" id="nextPage">Next</a><br>
+                <label for="firstname">First name</label>
+                <input class="inputTypes" type="text" name="firstname" id="first-name" minlength="3" maxlength="32" required>
+                <label for="lastname">Last name</label>
+                <input class="inputTypes" type="text" value="" name="lastname" id="last-name" minlength="3" maxlength="32" required>
+
                 <a href="/">Already registered? Go to login page</a>
             </div>
+            <button type="submit" class="btn btn-primary" id="nextPage">Next</button><br>
         </form>
     </main>
 <%- include('includes/end.ejs') %>

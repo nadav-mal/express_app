@@ -15,7 +15,9 @@ const Cookies = require('cookies');
  */
 const keys=['keyboard cat']
 exports.getRegister = (req, res, next) => {
-    const  cookies = new Cookies(req,res, {keys: keys})
+    console.log(req.cookie)
+    const account = new Account(req,res);
+    account.save();
 
     res.render('registration', {
         pageTitle: 'Registration',
@@ -32,9 +34,9 @@ exports.getRegister = (req, res, next) => {
  */
 exports.postRegister = (req, res, next) => {
     try {
-        const account = new Account(req.body.email, req.body.name, req.body.password);
+        const account = new Account(req,res);
         account.save();
-        res.redirect('/');
+        res.redirect('/admin/register-password');
     } catch (err) {
         // TO DO! we must handle the error here and generate a EJS page to display the error.
     }
@@ -58,6 +60,10 @@ exports.getAccounts = (req, res, next) => {
 };
 
 exports.getRegisterPassword = (req, res, next) => {
+   // const cookies = new Cookies(req,res, {keys: keys});
+    const account = new Account(req,res);
+    account.save();
+
     res.render('register-password', {
         pageTitle: 'Registration',
         path: '/admin/register-password',
@@ -73,7 +79,7 @@ exports.getRegisterPassword = (req, res, next) => {
  */
 exports.postRegisterPassword = (req, res, next) => {
     try {
-        const account = new Account(req.body.email, req.body.name, req.body.password);
+        const account = new Account(req,res);
         account.save();
         res.redirect('/');
     } catch (err) {

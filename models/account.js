@@ -1,13 +1,12 @@
-
+const Cookies = require('cookies')
 /** A MODULE to manage the Product model.
  * in future examples, we will use a database to store data.
  */
-
+const cookieLifetime = 30
 module.exports = class Account {
-    constructor(e, n, pw) {
-        this.email = e;
-        this.name = n;
-        this.password = pw;
+    constructor(req, res) {
+        this.req = req;
+        this.res = res;
     }
 
     /** Save the product to a file.
@@ -15,13 +14,20 @@ module.exports = class Account {
      * */
 
     save() {
-        if (!this.email || !this.name || !this.password) {
-            throw new Error('Product must have a title, price and id');
+
+
+        if(!this.req.cookie && this.req.body.email && this.req.body.firstname && this.req.body.lastname) {
+            const email = this.req.body.email
+            const firstname = this.req.body.firstname
+            const lastname = this.req.body.lastname
+            const toSave = {email: email, firstname: firstname, lastname: lastname}
+            const cookieExpiry = new Date(Date.now() + cookieLifetime) //30 sec lifetime
+            this.res.cookie("user", toSave, {expires: cookieExpiry, httpOnly:true})
         }
-        if (accountList.includes(this.email)) {
-            throw new Error('Product already exists');
+        else{
+
         }
-        accountList.push(this);
+
     }
 
     /** Fetch all products from the file.
