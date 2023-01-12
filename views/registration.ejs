@@ -11,11 +11,11 @@
             <h3 style="text-align: center">Please register</h3>
             <div class="form-control">
                 <label for="email">Email</label>
-                <input class="inputTypes" type="text" name="email" id="email" maxlength="32" required>
+                <input type="text" name="email" value="<%= email %>" id="email" maxlength="32" required>
                 <label for="firstname">First name</label>
-                <input class="inputTypes" type="text" name="firstname" id="first-name" minlength="3" maxlength="32" required>
+                <input  type="text" name="firstname" value="<%= firstname %>" id="first-name" minlength="3" maxlength="32" required>
                 <label for="lastname">Last name</label>
-                <input class="inputTypes" type="text" value="" name="lastname" id="last-name" minlength="3" maxlength="32" required>
+                <input  type="text" value="<%= lastname %>" name="lastname" id="last-name" minlength="3" maxlength="32" required>
 
                 <a href="/">Already registered? Go to login page</a>
             </div>
