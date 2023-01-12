@@ -1,5 +1,7 @@
 <%- include('includes/head.ejs') %>
 <link rel="stylesheet" href="/css/forms.css">
+
+<script src="js/main.js"></script>
 </head>
 
 <body>
@@ -9,12 +11,12 @@
             <h3 style="text-align: center">Please register</h3>
             <div class="form-control">
                 <label for="email">Email</label>
-                <input type="text" name="email" id="email" maxlength="32" required>
+                <input class="inputTypes" type="text" name="email" id="email" maxlength="32" required>
                 <label for="first-name">First name</label>
-                <input type="text" name="first-name" id="first-name" minlength="3" maxlength="32" required>
+                <input class="inputTypes" type="text" name="first-name" id="first-name" minlength="3" maxlength="32" required>
                 <label for="last-name">Last name</label>
-                <input type="text" name="last-name" id="last-name" minlength="3" maxlength="32" required>
-                <a href="/admin/register-password" class="btn btn-primary">Submit</a><br>
+                <input class="inputTypes" type="text" name="last-name" id="last-name" minlength="3" maxlength="32" required>
+                <a href="/admin/register-password" class="btn btn-primary" id="nextPage">Next</a><br>
                 <a href="/">Already registered? Go to login page</a>
             </div>
         </form>

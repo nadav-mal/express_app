@@ -1,5 +1,6 @@
 const Account = require('../models/account');
 
+const Cookies = require('cookies');
 // the controllers folder allows us to separate the logic from the routes.
 // this is a good practice because it allows us to reuse the logic in multiple routes.
 // note that this controller returns HTML only! it sometimes also redirects to other routes.
@@ -12,10 +13,13 @@ const Account = require('../models/account');
  * @param res
  * @param next
  */
+const keys=['keyboard cat']
 exports.getRegister = (req, res, next) => {
+    const  cookies = new Cookies(req,res, {keys: keys})
+
     res.render('registration', {
         pageTitle: 'Registration',
-        path: '/admin/register',
+        path: '/admin/register'
     });
 };
 
