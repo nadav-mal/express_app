@@ -17,38 +17,17 @@ const keys=['keyboard cat']
 exports.getRegister = (req, res, next) => {
     const cookies = new Cookies(req, res, {keys : keys});
     const user = cookies.get('user');
-    let email =''
-    let firstname = ''
-    let lastname= ''
-    if(user){
-        let indices = findIndices(user.toString(), 'email','firstname','lastname')
-        if(indices){
-            email = indices.email;
-            firstname = indices.firstname;
-            lastname = indices.lastname;
-        }
-    }
+    let data = null
+    if(user)
+        data = JSON.parse(user.toString());
     res.render('registration', {
         pageTitle: 'Registration',
         path: '/admin/register',
-        email : email,
-        firstname: firstname,
-        lastname: lastname
+        email : data ? data.email : '',
+        firstname: data ? data.firstname : '',
+        lastname: data ? data.lastname : ''
     });
 };
-/*Finding indices of user info from a string*/
-const findIndices = (string, s1,s2,s3)=>{
-    let i = string.search(s1);
-    let j = string.search(s2);
-    let k = string.search(s3);
-    if(i!== -1 && j !== -1 && k!== -1){
-        return { email : string.substring(i + s1.length + 3, j - 3),
-            firstname : string.substring(j + s2.length + 3, k - 3),
-            lastname : string.substring(k + s3.length + 3, string.length - 2)
-        };
-    }
-    return null;
-}
 
 /**
  * handles the post request from the add product page.
