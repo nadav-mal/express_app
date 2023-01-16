@@ -8,4 +8,6 @@ router.get('/register-password', accountsController.getRegisterPassword);
 router.post('/register-password', accountsController.postRegisterPassword);
 
 
+
+
 module.exports = router;

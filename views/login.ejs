@@ -8,6 +8,8 @@
         <%- include('includes/icon.ejs') %>
         <h3 style="text-align: center">Please sign in</h3>
         <div class="form-control">
+            <p> <%= pageError %></p>
+
             <label for="email">Email</label>
             <input type="text" name="email" id="email" maxlength="32" required>
             <label for="password">Password</label>
