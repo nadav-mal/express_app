@@ -24,3 +24,12 @@
     max-width: 90%;
     margin: auto;
 }
+.dynamicMessage {
+
+  color: #a94442;
+  border: 1px;
+    padding: 5px;
+    margin-bottom: 5px;
+    font-size: 18px;
+    text-align: center;
+}
