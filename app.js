@@ -4,6 +4,7 @@ const path = require('path');
 const express = require('express');
 const cookieParser= require('cookie-parser')
 const bodyParser = require('body-parser');
+const session = require('express-session');
 
 const errorController = require('./controllers/error');
 const app = express();
@@ -24,8 +25,33 @@ app.use(express.static(path.join(__dirname, 'public')));
 //static folder
 //app.use(express.static(path.join(__dirname, 'public')));
 
+const Sequelize = require('sequelize');
+const config = require(__dirname + '/config/config.json')["development"];
+var sequelize = new Sequelize(
+    config.database,
+    config.email,
+    config.password,
+    config
+);
+
+// initalize sequelize with session store
+var SequelizeSession = require('connect-session-sequelize')(session.Store);
+var mySession = new SequelizeSession({
+    db: sequelize
+});
 
 
+
+// enable sessions
+app.use(session({
+    secret:"somesecretkey",
+
+    resave: false, // Force save of session for each request
+    saveUninitialized: false, // Save a session that is new, but has not been modified
+    cookie: {maxAge: 10*60*1000 } // milliseconds!
+}));
+
+mySession.sync(); // this creates the session tables in your database
 
 // plug in the routes
 app.use('/admin', adminRoutes);

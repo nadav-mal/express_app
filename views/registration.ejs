@@ -5,23 +5,27 @@
 </head>
 
 <body>
-    <main>
-        <form class="account-form" action="/admin/register" method="POST">
-            <%- include('includes/icon.ejs') %>
-
-            <h3 style="text-align: center">Please register</h3>
-            <div class="form-control">
-                <p class="dynamicMessage"> <%= dynamicMessage %></p>
-                <label for="email">Email</label>
-                <input type="text" name="email" value="<%= email %>" id="email" maxlength="32" required>
-                <label for="firstname">First name</label>
-                <input  type="text" name="firstname" value="<%= firstname %>" id="first-name" minlength="3" maxlength="32" required>
-                <label for="lastname">Last name</label>
-                <input  type="text" value="<%= lastname %>" name="lastname" id="last-name" minlength="3" maxlength="32" required>
-
-                <a href="/">Already registered? Go to login page</a>
-            </div>
-            <button type="submit" class="btn btn-primary" id="nextPage">Next</button><br>
-        </form>
-    </main>
+<main>
+    <div class="container">
+        <div class="row">
+            <form class="account-form" action="/admin/register" method="POST">
+                <%- include('includes/icon.ejs') %>
+                <h3 style="text-align: center">Please register</h3>
+                <div class="form-control">
+                    <p class="dynamicMessage"> <%= dynamicMessage %></p>
+                    <label for="email">Email</label>
+                    <input type="text" name="email" value="<%= email %>" id="email" maxlength="32" required>
+                    <label for="firstname">First name</label>
+                    <input type="text" name="firstname" value="<%= firstname %>" id="first-name" minlength="3"
+                           maxlength="32" required>
+                    <label for="lastname">Last name</label>
+                    <input type="text" value="<%= lastname %>" name="lastname" id="last-name" minlength="3"
+                           maxlength="32" required>
+                    <button style="margin-top: 5px" type="submit" class="btn btn-primary" id="nextPage">Next</button> <br>
+                    <a href="/">Already registered? Go to login page</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
 <%- include('includes/end.ejs') %>
