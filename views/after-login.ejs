@@ -1,0 +1,67 @@
+<%- include('includes/head.ejs') %>
+<link rel="stylesheet" href="/css/forms.css">
+
+<style>  img:hover {
+        cursor: zoom-in;
+    } </style>
+
+</head>
+
+<body class="bg-danger   bg-opacity-10">
+<main>
+    <div class="container"><!-- Change to container-fluid !-->
+
+        <div class="row">
+            <form id="ajaxformget" class="nasa-form" action="" method="POST">
+                <div class="form-control" id="beforeDate">
+                    <p class="dynamicMessage"> <%= dynamicMessage %></p>
+                    <label for="endDate" style="color:black">Insert date</label>
+                    <input type="date" name="endDateOnly" id="endDate">
+                    <input type="submit" id="commentAddition" value="Get images">
+                    <button class="btn btn-danger" action="url">Logout</button>
+                </div>
+            </form>
+        </div>
+
+        <div hidden="hidden" id="badRequest">
+            <div class="row bg-danger">
+                <h1>it seems like you made a bad request. Try making a new one!</h1>
+                <h5 id="errorcode"></h5>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col" id="images">
+                <ul class="list-group" id="imagesList">
+
+                </ul>
+            </div>
+        </div>
+
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                id="modalBtn" hidden="hidden">
+            Click here to see full image
+        </button>
+
+
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-body text-center">
+                        <button type="button" class="btn-close bg-dark" data-bs-dismiss="modal" aria-label="Close"
+                                style="position:absolute; top:5px;right:5px;"></button>
+                        <img src="" alt="image" class="img-fluid" id="modalImage">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!--   <img src="" id="imageModal"> !-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+            crossorigin="anonymous"></script>
+    <script src="../js/main.js"></script>
+</main>
+<%- include('includes/end.ejs') %>
