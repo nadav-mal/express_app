@@ -9,8 +9,8 @@
         document.getElementById("endDate").value = manager.getToday()
 
         // Displays the images from the submitted date and onward.
-        const form = document.getElementById("ajaxformget");
-        form.addEventListener("submit", display.displayImagesFromURL);
+        const form = document.getElementById("commentAddition");
+        form.addEventListener("click", display.displayImagesFromURL);
     });
 
     /** General functions which are in vast use. */
