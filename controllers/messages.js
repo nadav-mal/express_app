@@ -24,21 +24,32 @@ exports.getMessages = (req, res) => {
         res.status(400).send({message: 'An unexpected error.'})
 }
 
-exports.postMessages = (req, res) => {
+exports.postMessage = async(req, res) => {
+    console.log("here");
     const validators = validationBundle.postValidation
     // Get the message text, id and username from the request body
     const message = req.body.message
-    const id = req.body.id
-    const username = req.body.username
+    console.log(message)
+    const imgDate = req.body.id
+
+    if(!req.session.email)
+        res.status(404).send({message: 'Email session has expired.'})
+    const email = req.session.email
     if (!validators.validateMessage(message))
-        res.status(400).send({message: 'Comment contains spaces only'})
-    else if (!validators.validateID(id))
+        res.status(400).send({message: 'Comment contains spaces only.'})
+    else if (!validators.validateID(imgDate))
         res.status(400).send({message: 'Invalid date format (YYYY-MM-DD).'})
-    else if (!validators.validateUsername(username))
-        res.status(400).send({message: 'Invalid username.'})
+    //else if (!validators.validateUsername(username))
+    //    res.status(400).send({message: 'Invalid username.'})
     else {
         // Return a success response
-        db.Message.create(id, username, message)
+        db.Messages.create({
+            imgDate:imgDate,
+            content:message,
+            email:email
+        });
+        //const msgs = await db.Message.findAll();
+        //console.log(msgs);
         res.status(200).send({message: 'Message added successfully.'})
     }
 }

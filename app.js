@@ -17,6 +17,7 @@ const adminRoutes = require('./routes/admin');
 const loginRoutes = require('./routes/login');
 
 // plug in the body parser middleware and static middleware
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 //app.use(cookieParser)

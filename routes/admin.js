@@ -18,7 +18,8 @@ router.post('/get-main', accountsController.postMain);
 /* GET messages. */
 router.get('/messages/:id/:timestamp', messagesController.getMessages);
 /* POST message. */
-router.post('/messages', );
+router.post('/messages', messagesController.postMessage);
+
 /* DELETE message. */
 router.delete('/deleteMessage', (req, res) => {
     const validators = validationBundle.getAndDeleteValidation

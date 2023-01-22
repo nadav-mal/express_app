@@ -117,6 +117,7 @@ exports.postMain = async (req, res, next) => {
             if(req.body.password === isRegisteredUser.password){
                 req.session.isLoggedIn = true;
                 req.session.name = isRegisteredUser.firstName + " " + isRegisteredUser.lastName;
+                req.session.email = isRegisteredUser.email;
                 res.redirect('get-main')
             }
             else throw new Error('The given password is incorrect.');
@@ -155,7 +156,12 @@ exports.postRegisterPassword = async (req, res, next) => {
                     const firstName = data.firstname;
                     const lastName = data.lastname;
                     const password = req.body.password;
-                    db.User.create({email : email, lastName: lastName, firstName : firstName, password : password})
+                    db.User.create({
+                        email : email,
+                        lastName: lastName,
+                        firstName : firstName,
+                        password : password
+                    });
                     setCookieMessage(cookies, 'You are now registered',2);
                     res.redirect('/');
                 }

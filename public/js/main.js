@@ -386,14 +386,14 @@
          * @param username - username of submitter.
          * @param errorDisplay - error if any.
          */
-        const postComment = (id, message, username, errorDisplay) => {
+        const postComment = (id, message, errorDisplay) => {
             let isValid = true
-            fetch(`/index/messages`, {
+            fetch(`/admin/messages`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({id: id, message: message, username: username})
+                body: JSON.stringify({id: id, message: message})
             })
                 .then(function (response) {
                     if (response.ok)
@@ -493,10 +493,9 @@
             let addMessageBtn = createElement('button', 'btn btn-secondary', 'Add message')
             addMessageBtn.id = `button${id}`
             addMessageBtn.addEventListener('click', function () {
-                let username = document.getElementById("name").value
                 if (message.trim().length > 0 || true) {
                     errorDisplay.setAttribute('hidden', 'hidden')
-                    postComment(id, message, username, errorDisplay)
+                    postComment(id, message, errorDisplay)
                     message = ""
                     document.getElementById(`textBox${id}`).value = ""
                 } else
