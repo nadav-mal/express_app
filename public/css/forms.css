@@ -52,6 +52,10 @@
     background-color: #011423;
 }
 
+#pageTitle {
+    color: floralwhite;
+    text-align: center;
+}
 body {
     background-image: url('/assets/nasa-bg.png');
     background-repeat: no-repeat;

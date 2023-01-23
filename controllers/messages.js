@@ -17,20 +17,21 @@ exports.getMessages = async (req, res) => {
     //3: if the latest message is already displayed do nothing else return all
     const latestMessage = await db.Message.findAll({
         where: {imgDate: id},
-        order: [['createdAt', 'DESC']],
+        order: [['updatedAt', 'DESC']],
         limit: 1
     });
+
     if (latestMessage[0]) {
         const message = latestMessage[0]; //messages is the array of messages. since limit is 1 there's only one
         if (message && message.dataValues) {
-            const createdAt = message.dataValues.createdAt; //After adding status, it will be message.dataValues.updatedAt
-            const createdAtEpoch = new Date(createdAt).getTime(); //converting to epoch
-            if (timestamp < createdAtEpoch) {
-                const messages = await db.Message.findAll({
-                    where: {imgDate: id},
-                    order: [['createdAt', 'ASC']] //(oldest first)
-                })
+            const updatedAt = message.dataValues.updatedAt; //After adding status, it will be message.dataValues.updatedAt
+            const updatedAtEpoch = new Date(updatedAt).getTime(); //converting to epoch
 
+            if (timestamp < updatedAtEpoch) {
+                const messages = await db.Message.findAll({
+                    where: {imgDate: id, isDeleted: false},
+                    order: [['updatedAt', 'ASC']] //(oldest first)
+                })
                 if (messages){
                     res.status(200).json(messages);
                 }
@@ -65,7 +66,7 @@ exports.postMessage = async (req, res) => {
             imgDate: imgDate,
             content: message,
             email: email,
-            lastUpdate: new Date()
+            isDeleted: false
         });
 
         res.status(200).send({message: 'Message added successfully.'})
@@ -79,7 +80,29 @@ exports.deleteMessage = async (req, res) => {
     let createdAt = req.body.createdAt;
     if (validators.validateID(id))
     {
-        /*
+        let msg = await db.Message.findOne({
+            where: {
+                imgDate: id,
+                createdAt: createdAt,
+                email: email,
+                isDeleted: false
+            }
+        }).then(message => {
+            if (message) {
+                message.update({
+                    isDeleted: true
+                });
+                setDeleteTimer(id, createdAt, email);
+                return message
+            }
+        });
+        res.status(200).send({message: `Message removed successfully`})
+    }
+    else res.status(400).send({message: `Oops... seems like request is invalid!`})
+};
+
+const setDeleteTimer = (id, createdAt, email) => {
+    setTimeout(() => {
         db.Message.destroy({
             where: {
                 imgDate: id,
@@ -87,29 +110,8 @@ exports.deleteMessage = async (req, res) => {
                 email: email
             }
         });
-        */
-        let msg = await db.Message.findOne({
-            where: {
-                imgDate: id,
-                createdAt: createdAt,
-                email: email
-            }
-        }).then(message => {
-            if (message) {
-                console.log("1" + message.lastUpdate)
-                message.update({
-                    lastUpdate: Date.now()
-                });
-                console.log("2" + message.lastUpdate)
-                return message
-            }
-        });
-
-        res.status(200).send({message: `Message removed successfully`})
-    }
-    else res.status(400).send({message: `Oops... seems like request is invalid!`})
-};
-
+    }, 20000);
+}
 
 /** Validation Management. */
 let validationBundle = {};

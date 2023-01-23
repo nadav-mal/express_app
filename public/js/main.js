@@ -2,7 +2,6 @@
 
     /** DOMContentLoaded listener. */
     document.addEventListener("DOMContentLoaded", function () {
-        console.log("loaded");
         const manager = webManagement.manager
         const display = displayManagement.display
         // Sets the default date to today.
@@ -150,8 +149,6 @@
                     const modalComments = document.getElementById("commentModalSection");
                     modalComments.removeChild(modalComments.firstChild);
                     const messagesCol = getMessagesCol(imgId);
-                    console.log(messagesCol.messagesCol);
-                    console.log(messagesCol.intervalId);
                     modalComments.append(messagesCol.messagesCol);
                     document.getElementsByClassName("dynamicId").id = messagesCol.intervalId
                 })
@@ -337,7 +334,6 @@
          * @param event - submit event of the name.
          */
         const validateName = (event) => {
-            console.log("validating name")
             event.preventDefault()
             name = document.getElementById("name").value.trim()
 
@@ -427,7 +423,6 @@
                 .then(response => {
                     if (isValid) {
                         loadComments(id)
-
                     }
                     displayResponse(errorDisplay, response.message, isValid)
                 })
@@ -451,8 +446,9 @@
                     isValid = false
                 return response.json()
             }).then((response) => {
-                if (isValid)
+                if (isValid) {
                     loadComments(id)
+                }
                 displayResponse(displayBtn, response.message, isValid)
             })
         }
@@ -570,7 +566,6 @@
             const userMail = document.getElementById('userMail').innerHTML.trim();
             const createdAt = message.createdAt;
             if (message.email === userMail) { //document.getElementById("name").value
-                console.log("its equal");
                 let deleteBtn = createElement('button', "btn btn-outline-danger", 'x')
                 deleteBtn.addEventListener('click', function () {
                     deleteComment(id, userMail, createdAt)
