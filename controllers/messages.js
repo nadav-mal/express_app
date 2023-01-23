@@ -6,7 +6,7 @@ const {QueryTypes} = require('sequelize');
 // pay attention NOT TO MIX HTML and JSON in the same controller.
 const db = require('../models');
 
-//test
+//test hui uisdaudia
 exports.getMessages = async (req, res) => {
     const validators = validationBundle.getAndDeleteValidation
     // Get the message ID and timestamp from the request parameters
