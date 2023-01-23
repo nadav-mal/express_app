@@ -1,5 +1,6 @@
 .form-control {
     margin: 1rem 0;
+    border: 1px solid black;
 }
 
 .form-control label,
@@ -11,7 +12,6 @@
     width: 100%;
     margin-bottom: 0.25rem;
 }
-
 
 .form-control input {
     border: 1px solid #a1a1a1;
@@ -35,7 +35,6 @@
 }
 
 .dynamicMessage {
-
   color: #a94442;
   border: 1px;
     padding: 5px;
@@ -47,3 +46,17 @@
 #modalImage {
     max-height: 50vh
 }
+
+
+#modalBody {
+    background-color: #011423;
+}
+
+body {
+    background-image: url('/assets/nasa-bg.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    background-size: cover;
+}
+

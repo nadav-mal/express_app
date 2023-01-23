@@ -49,7 +49,6 @@ exports.postMessage = async (req, res) => {
     const validators = validationBundle.postValidation
     // Get the message text, id and username from the request body
     const message = req.body.message
-    console.log(message)
     const imgDate = req.body.id
     if (!req.session.email)
         res.status(404).send({message: 'Email session has expired.'})
@@ -65,23 +64,47 @@ exports.postMessage = async (req, res) => {
         db.Message.create({
             imgDate: imgDate,
             content: message,
-            email: email
+            email: email,
+            lastUpdate: new Date()
         });
-        //const msgs = await db.Message.findAll();
-        //console.log(msgs);
+
         res.status(200).send({message: 'Message added successfully.'})
     }
 }
 
-exports.deleteMessage = (req, res) => {
-    console.log("arrived")
-    const validators = validationBundle.getAndDeleteValidation
-    let id = req.body.id
-    let index = req.body.index
-    if (validators.validateID(id) && validators.validatePositive(index))
+exports.deleteMessage = async (req, res) => {
+    const validators = validationBundle.getAndDeleteValidation;
+    let id = req.body.id;
+    let email = req.body.email;
+    let createdAt = req.body.createdAt;
+    if (validators.validateID(id))
     {
-        console.log("in here");
-        db.Message.update({updatedAt: new Date()}, {where : {email : id}})
+        /*
+        db.Message.destroy({
+            where: {
+                imgDate: id,
+                createdAt: createdAt,
+                email: email
+            }
+        });
+        */
+        let msg = await db.Message.findOne({
+            where: {
+                imgDate: id,
+                createdAt: createdAt,
+                email: email
+            }
+        }).then(message => {
+            if (message) {
+                console.log("1" + message.lastUpdate)
+                message.update({
+                    lastUpdate: Date.now()
+                });
+                console.log("2" + message.lastUpdate)
+                return message
+            }
+        });
+
         res.status(200).send({message: `Message removed successfully`})
     }
     else res.status(400).send({message: `Oops... seems like request is invalid!`})

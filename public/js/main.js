@@ -95,16 +95,17 @@
             for (let i = 0; i < batchSize; i++) {
                 if (data[i] !== undefined && data[i]) //For tricky dates like 06/20/1995 in which nasa's response is inconsistent
                 {
-                    let opacity = (displayIndex % 2 === 0) ? "0.5" : "0.75"
-                    let className =  'row rounded mb-4'
+                    let opacity = (displayIndex % 2 === 0) ? "0.5" : "0.75";
+                    let className =  'row rounded mb-4';
                     let listItem = {
                         row: appendMultiple(className, getMediaCol(data[i]), getImageInfo(data[i])),
                         item: createElement('li', 'list-group-item')
-                    }
-                    listItem.row.style.backgroundColor = `rgba(105, 105, 105, ${opacity})`
-                    listItem.item.append(listItem.row)
-                    currBatch.prepend(listItem.row)
-                    displayIndex++
+                    };
+                    listItem.row.style.backgroundColor = `rgba(105, 105, 105, ${opacity})`;
+                    listItem.row.style.border = "1px solid black";
+                    listItem.item.append(listItem.row);
+                    currBatch.prepend(listItem.row);
+                    displayIndex++;
                 }
             }
             document.getElementById("imagesList").append(currBatch)
@@ -165,7 +166,9 @@
         const getImageInfo = (elem) => {
             let col = createElement('div', 'col-lg-8 col-md-6 col-sm-12')
             col.style.marginTop = "10px"
-            col.append(getDescriptionRow(elem))
+            let desc = getDescriptionRow(elem)
+            desc.style.border = "1px solid black";
+            col.append(desc)
             return col
         }
         /***
@@ -212,6 +215,7 @@
             hideButton.style.marginBottom = "30px"
             hideButton.style.transform = "scale(0.95)"
             hideButton.style.margin = "auto"
+            hideButton.style.border = "1px solid black";
             hideButton.addEventListener('click', function (event) {
                 event.preventDefault()
                 changeDisplay(hideButton, paragraphs)
@@ -385,7 +389,6 @@
                 })
                 .then(messages => {
                     if (messages){
-                        console.log(messages);
                         updateComments(imgDate, messages)
                     }
 
@@ -422,8 +425,10 @@
                     }
                 })
                 .then(response => {
-                    if (isValid)
+                    if (isValid) {
                         loadComments(id)
+
+                    }
                     displayResponse(errorDisplay, response.message, isValid)
                 })
         }
@@ -432,12 +437,12 @@
          * @param id - of the image on which the comment is posted.
          * @param index - of the comment to delete.
          */
-        const deleteComment = (id, index) => {
+        const deleteComment = (id, email, createdAt) => {
             let displayBtn = document.getElementById(`errorBtn${id}`)
             let isValid = true
             fetch(`/admin/deleteMessage`, {
                 method: 'DELETE',
-                body: JSON.stringify({id: id, index: index}),
+                body: JSON.stringify({id: id, email: email, createdAt: createdAt}),
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -461,7 +466,7 @@
             let comments = createElement('div')
             idUpdateStamps.set(id, Date.now())
             for (let i = 0; i < messages.length; i++)
-                comments.append(makeMessageGrid(messages[i], id, i))
+                comments.append(makeMessageGrid(messages[i], id))
 
             displayComments(comments, id)
         }
@@ -509,6 +514,7 @@
             //----------------------------------
             let addMessageBtn = createElement('button', 'btn btn-secondary', 'Add message')
             addMessageBtn.id = `button${id}`
+            addMessageBtn.style.border = "1px solid black";
             addMessageBtn.addEventListener('click', function () {
                 if (message.trim().length > 0 || true) {
                     errorDisplay.setAttribute('hidden', 'hidden')
@@ -552,23 +558,22 @@
          * @param index - index of the comment.
          * @returns {*} - a list item element.
          */
-        const makeMessageGrid = (message, id, index) => {
+        const makeMessageGrid = (message, id) => {
             let listItem = {
                 item: createElement('li', 'list-group-item'),
                 row: createElement('div', 'row')
             }
-            listItem.item.style.backgroundColor = "#a5b15e"
+            listItem.item.style.backgroundColor = "#f2be73"
             let secondRow = appendMultiple("row", createElement('p', '', message.content))
             let areaForUsername = appendMultiple("col-10", createElement('h5', '', message.email))
             listItem.row.append(areaForUsername)
             const userMail = document.getElementById('userMail').innerHTML.trim();
-            console.log(userMail);
-            console.log(message.email);
+            const createdAt = message.createdAt;
             if (message.email === userMail) { //document.getElementById("name").value
                 console.log("its equal");
                 let deleteBtn = createElement('button', "btn btn-outline-danger", 'x')
                 deleteBtn.addEventListener('click', function () {
-                    deleteComment(id, index)
+                    deleteComment(id, userMail, createdAt)
                 })
                 let areaForDelete = appendMultiple("col-2", deleteBtn)
                 listItem.row.append(areaForDelete)
