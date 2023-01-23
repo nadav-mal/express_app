@@ -7,7 +7,12 @@
         const display = displayManagement.display
         // Sets the default date to today.
         document.getElementById("endDate").value = manager.getToday()
-
+        const modal = document.getElementById("exampleModal");
+        modal.addEventListener("hidden.bs.modal", (ev) => {
+            const modalImg = document.getElementById('modalImage');
+            const id =  document.getElementsByClassName("dynamicId")[0].id
+            clearInterval(id);
+        });
         // Displays the images from the submitted date and onward.
         const form = document.getElementById("commentAddition");
         form.addEventListener("click", display.displayImagesFromURL);
@@ -93,7 +98,7 @@
                     let opacity = (displayIndex % 2 === 0) ? "0.5" : "0.75"
                     let className =  'row rounded mb-4'
                     let listItem = {
-                        row: appendMultiple(className, getMediaCol(data[i]), getImageInfo(data[i]), getMessagesCol(data[i]['date'])),
+                        row: appendMultiple(className, getMediaCol(data[i]), getImageInfo(data[i])),
                         item: createElement('li', 'list-group-item')
                     }
                     listItem.row.style.backgroundColor = `rgba(105, 105, 105, ${opacity})`
@@ -111,13 +116,13 @@
          * @returns {*} - video/image col element.
          */
         const getMediaCol = (elem) => {
-            let col = createElement('div', 'col-lg-3 col-md-6 col-sm-12 p-4')
+            let col = createElement('div', 'col-lg-4 col-md-6 col-sm-12 p-4')
             let row = createElement('div', 'row')
             if (elem && elem.hasOwnProperty('media_type')) {
                 if (elem['media_type'] === 'image')
-                    row.append(getMediaElement(elem['url'], true))
+                    row.append(getMediaElement(elem['url'], true, elem['date']));
                 else if (elem['media_type'] === 'video')
-                    row.append(getMediaElement(elem['url'], false))
+                    row.append(getMediaElement(elem['url'], false, elem['date']));
                 col.append(row)
             }
 
@@ -129,7 +134,7 @@
          * @param isImage - boolean which states image/video.
          * @returns {*} - media element.
          */
-        const getMediaElement = (url, isImage) => {
+        const getMediaElement = (url, isImage, imgId) => {
             let media = isImage ? createElement('img', 'img-thumbnail') : createElement('iframe', 'video')
             isImage ? media.setAttribute('data-image', url) : media.setAttribute('data-video', url)
             media.src = url
@@ -137,9 +142,17 @@
             media.style.maxWidth = "400px";
             if (isImage) {
                 media.addEventListener('click', function () {
-                    document.getElementById('modalImage').src = media.src
-                    document.getElementById('modalImage').style.cursor = "default"
+                    const modalImg = document.getElementById('modalImage');
+                    modalImg.src = media.src
+                    modalImg.style.cursor = "default"
                     document.getElementById("modalBtn").click()
+                    const modalComments = document.getElementById("commentModalSection");
+                    modalComments.removeChild(modalComments.firstChild);
+                    const messagesCol = getMessagesCol(imgId);
+                    console.log(messagesCol.messagesCol);
+                    console.log(messagesCol.intervalId);
+                    modalComments.append(messagesCol.messagesCol);
+                    document.getElementsByClassName("dynamicId").id = messagesCol.intervalId
                 })
             }
             return media
@@ -150,7 +163,7 @@
          * @returns {*} - col element with the info appended to it.
          */
         const getImageInfo = (elem) => {
-            let col = createElement('div', 'col-lg-5 col-md-6 col-sm-12')
+            let col = createElement('div', 'col-lg-8 col-md-6 col-sm-12')
             col.style.marginTop = "10px"
             col.append(getDescriptionRow(elem))
             return col
@@ -183,7 +196,7 @@
             paragraphs.header.innerHTML = `${elem['title']}`
             paragraphs.explanation.innerHTML = `${elem['explanation']}`
             paragraphs.explanation.setAttribute('hidden', 'hidden')
-            paragraphs.explanation.style.maxHeight = "300px"
+            paragraphs.explanation.style.maxHeight = "150px"
             paragraphs.explanation.style.overflowY = "scroll"
             paragraphs.copyright.innerHTML = elem['copyright'] !== undefined ? `Copyright: ${elem['copyright']}` : "Copyright: Unknown"
             return paragraphs
@@ -230,15 +243,16 @@
          */
         const getMessagesCol = (id) => {
             const messagesManager = messagesManagement.messagesCol
-            let messagesCol = createElement('div', 'col-lg-4 col-md-12 p-2')
+            let messagesCol = createElement('div', 'col-lg-12 col-md-12 p-2')
             messagesManager.idUpdateStamps.set(id, 0)
             messagesCol.append(createCommentSection(id))
             messagesManager.loadComments(id)
             messagesManager.idUpdateStamps.set(id, Date.now())
-            messagesManager.setMessagesTimer(id)
+            let intervalId = messagesManager.setMessagesTimer(id)
             messagesCol.append(messagesManager.createMsgArea(id, messagesCol))
             messagesCol.style.marginTop = "18px"
-            return messagesCol
+            return { messagesCol: messagesCol,
+                    intervalId : intervalId}
         }
         /***
          * Function to create the scrolling event listener.
@@ -359,7 +373,7 @@
          */
         function loadComments(imgDate) {
             let timer = idUpdateStamps.get(imgDate)
-            fetch(`/index/messages/${imgDate}/${timer}`)
+            fetch(`/admin/messages/${imgDate}/${timer}`)
                 .then(function (response) {
                     //Checking the status of what the server returned.
                     if (response.ok)
@@ -370,8 +384,11 @@
                         throw new Error("Unexpected error from server")
                 })
                 .then(messages => {
-                    if (messages)
+                    if (messages){
+                        console.log(messages);
                         updateComments(imgDate, messages)
+                    }
+
                 })
                 .catch(error => {
                     if (error === "No new messages")
@@ -418,7 +435,7 @@
         const deleteComment = (id, index) => {
             let displayBtn = document.getElementById(`errorBtn${id}`)
             let isValid = true
-            fetch(`/index/deleteMessage`, {
+            fetch(`/admin/deleteMessage`, {
                 method: 'DELETE',
                 body: JSON.stringify({id: id, index: index}),
                 headers: {
@@ -501,6 +518,8 @@
                 } else
                     displayResponse(errorDisplay, 'Comments contains spaces only')
             });
+            let setPollingBtn = createElement('button',' btn btn-primary','Turn polling on');
+            setPollingBtn.id = `Polling${id}`;
             let addMessageCol = appendMultiple('col-4', addMessageBtn)
             let displayErrorCol = appendMultiple('col-8', errorDisplay)
             displayErrorCol.append(errorDisplay)
@@ -539,10 +558,14 @@
                 row: createElement('div', 'row')
             }
             listItem.item.style.backgroundColor = "#a5b15e"
-            let secondRow = appendMultiple("row", createElement('p', '', message.message))
-            let areaForUsername = appendMultiple("col-10", createElement('h5', '', message.username))
+            let secondRow = appendMultiple("row", createElement('p', '', message.content))
+            let areaForUsername = appendMultiple("col-10", createElement('h5', '', message.email))
             listItem.row.append(areaForUsername)
-            if (message.username === document.getElementById("name").value) {
+            const userMail = document.getElementById('userMail').innerHTML.trim();
+            console.log(userMail);
+            console.log(message.email);
+            if (message.email === userMail) { //document.getElementById("name").value
+                console.log("its equal");
                 let deleteBtn = createElement('button', "btn btn-outline-danger", 'x')
                 deleteBtn.addEventListener('click', function () {
                     deleteComment(id, index)
@@ -559,10 +582,11 @@
          * @param id - of the image.
          */
         const setMessagesTimer = (id) => {
-            setInterval(function () {
+            const intervalId = setInterval(function () {
                 loadComments(id)
                 idUpdateStamps.set(id, Date.now())
             }, 15000)
+            return intervalId;
         }
 
         messageManager.messagesCol = {idUpdateStamps, loadComments, createMsgArea, setMessagesTimer};

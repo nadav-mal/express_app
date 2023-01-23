@@ -71,6 +71,7 @@ exports.getLogin = (req, res, next) => {
     else {
         const cookies = new Cookies(req,res, {keys: keys});
         const userData = cookies.get('dynamicMessage');
+        const email = req.session.email;
         let dynamicMessage = ''
         let message = null
         if(userData) {
@@ -99,6 +100,7 @@ exports.getMain = (req, res, next) => {
         message  = `Welcome, ${req.session.name}.`;
         res.render('after-login', {
             pageTitle: 'Logged in',
+            userMail : req.session.email,
             dynamicMessage: message ? message : '',
             path: '/admin/after-login',
         });

@@ -6,13 +6,12 @@ const {QueryTypes} = require('sequelize');
 // pay attention NOT TO MIX HTML and JSON in the same controller.
 const db = require('../models');
 
-//test hui uisdaudia
+
 exports.getMessages = async (req, res) => {
     const validators = validationBundle.getAndDeleteValidation
     // Get the message ID and timestamp from the request parameters
     const id = req.params.id
     const timestamp = req.params.timestamp
-    console.log(timestamp);
     //1: check if this id is a valid date
     //2: get the latest message from this db
     //3: if the latest message is already displayed do nothing else return all
@@ -21,7 +20,7 @@ exports.getMessages = async (req, res) => {
         order: [['createdAt', 'DESC']],
         limit: 1
     });
-    if (latestMessage) {
+    if (latestMessage[0]) {
         const message = latestMessage[0]; //messages is the array of messages. since limit is 1 there's only one
         if (message && message.dataValues) {
             const createdAt = message.dataValues.createdAt; //After adding status, it will be message.dataValues.updatedAt
@@ -31,13 +30,16 @@ exports.getMessages = async (req, res) => {
                     where: {imgDate: id},
                     order: [['createdAt', 'ASC']] //(oldest first)
                 })
-                if (messages)
-                    res.json(messages);
-                 else
+
+                if (messages){
+                    res.status(200).json(messages);
+                }
+                 else{
                     res.status(300).send({message: 'No messages on this post'});
+                }
             }
             else
-                res.status(300).send({message: 'You are up to date!'});
+                res.status(325).send({message: 'You are up to date!'});
         }
     }
 }
@@ -49,7 +51,6 @@ exports.postMessage = async (req, res) => {
     const message = req.body.message
     console.log(message)
     const imgDate = req.body.id
-
     if (!req.session.email)
         res.status(404).send({message: 'Email session has expired.'})
     const email = req.session.email
@@ -72,6 +73,21 @@ exports.postMessage = async (req, res) => {
     }
 }
 
+exports.deleteMessage = (req, res) => {
+    console.log("arrived")
+    const validators = validationBundle.getAndDeleteValidation
+    let id = req.body.id
+    let index = req.body.index
+    if (validators.validateID(id) && validators.validatePositive(index))
+    {
+        console.log("in here");
+        db.Message.update({updatedAt: new Date()}, {where : {email : id}})
+        res.status(200).send({message: `Message removed successfully`})
+    }
+    else res.status(400).send({message: `Oops... seems like request is invalid!`})
+};
+
+
 /** Validation Management. */
 let validationBundle = {};
 (function validationFunctions(validation) {
@@ -93,3 +109,4 @@ let validationBundle = {};
     validation.getAndDeleteValidation = {validateID, validatePositive};
 
 }(validationBundle));
+

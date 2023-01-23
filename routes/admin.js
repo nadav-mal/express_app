@@ -21,16 +21,7 @@ router.get('/messages/:id/:timestamp', messagesController.getMessages);
 router.post('/messages', messagesController.postMessage);
 
 /* DELETE message. */
-router.delete('/deleteMessage', (req, res) => {
-    const validators = validationBundle.getAndDeleteValidation
-    let id = req.body.id
-    let index = req.body.index
-    if (validators.validateID(id) && validators.validatePositive(index)) {
-        db.deleteMessage(id, index)
-        res.status(200).send({message: `Message removed successfully`})
-    } else
-        res.status(400).send({message: `Oops... seems like request is invalid!`})
-});
+router.delete('/deleteMessage', messagesController.deleteMessage);
 
 module.exports = router;
 

@@ -43,3 +43,7 @@
     font-size: 18px;
     text-align: center;
 }
+
+#modalImage {
+    max-height: 50vh
+}
