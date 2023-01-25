@@ -14,9 +14,42 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   User.init({
-    firstName: DataTypes.STRING,
-    lastName: DataTypes.STRING,
-    email: DataTypes.STRING,
+    firstName: {
+      type : DataTypes.STRING,
+      validate: {
+        is: {
+          args: /^[a-zA-Z]+$/i,
+          msg: 'First name should only contain letters'
+        },
+        len: {
+          args: [3, 32],
+          msg: 'First name should be between 3 and 32 characters'
+        },
+        notEmpty: true
+      }
+    },
+    lastName: {
+      type : DataTypes.STRING,
+      validate: {
+        is: {
+          args: /^[a-zA-Z]+$/i,
+          msg: 'Last name should only contain letters'
+        },
+        len: {
+          args: [3, 32],
+          msg: 'Last name should be between 3 and 32 characters'
+        },
+        notEmpty: true
+      }
+    },
+    email: {
+      type : DataTypes.STRING,
+      validate : {
+        isEmail :{
+          msg : 'Email validation failed'
+        }
+      }
+    },
     password: DataTypes.STRING
   }, {
     sequelize,
