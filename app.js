@@ -52,6 +52,12 @@ app.use(session({
     cookie: {maxAge: 10*60*1000 } // milliseconds!
 }));
 
+//Ignore driver cache
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store')
+    next()
+});
+
 mySession.sync(); // this creates the session tables in your database
 
 // plug in the routes
