@@ -1,6 +1,7 @@
 const Cookies = require('cookies');
 const {QueryTypes, Sequelize} = require('sequelize');
 let sqlValidator = require('validator');
+const bcrypt = require('bcrypt');
 
 // the controllers folder allows us to separate the logic from the routes.
 // this is a good practice because it allows us to reuse the logic in multiple routes.
@@ -126,7 +127,8 @@ exports.postMain = async (req, res, next) => {
     try {
         const isRegisteredUser = await db.User.findOne({where: {email: req.body.email}});
         if (isRegisteredUser) {
-            if (req.body.password === isRegisteredUser.password) {
+            const isMatch = await bcrypt.compare(req.body.password, isRegisteredUser.password);
+            if (isMatch) {
                 req.session.isLoggedIn = true;
                 req.session.name = isRegisteredUser.firstName + " " + isRegisteredUser.lastName;
                 req.session.email = isRegisteredUser.email;
@@ -163,11 +165,12 @@ exports.postRegisterPassword = async (req, res, next) => {
                 if (isRegisteredUser) {
                     throw new Error('This email is already taken.');
                 } else {
+                    const hashedPassword = await bcrypt.hash(req.body.password, 10);
                     db.User.create({
                         email: data.email.toLowerCase(),
                         firstName: data.firstname,
                         lastName: data.lastname,
-                        password: req.body.password
+                        password: hashedPassword
                     }).then(() => {
                         setCookieMessage(cookies, 'You are now registered', 2);
                         res.redirect('/');
