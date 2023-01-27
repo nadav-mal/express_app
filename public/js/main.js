@@ -380,7 +380,7 @@ let messagesManagement = {};
     // Timestamps for the updates of the comments on the images.
     // Key : ID (date of the image), Value : Last update time.
     const idUpdateStamps = new Map()
-    const dynamicMessageArea =
+
     /***
      * Get request.
      * @param imgDate - the date of the image to start fetching from.
