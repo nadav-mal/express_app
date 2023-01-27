@@ -1,4 +1,4 @@
-const {QueryTypes} = require('sequelize');
+const {QueryTypes, Sequelize} = require('sequelize');
 // the controllers folder allows us to separate the logic from the routes.
 // this is a good practice because it allows us to reuse the logic in multiple routes.
 // note that this controller returns HTML only! it sometimes also redirects to other routes.
@@ -6,7 +6,6 @@ const {QueryTypes} = require('sequelize');
 // pay attention NOT TO MIX HTML and JSON in the same controller.
 const db = require('../models');
 const Cookies = require("cookies");
-const Validator = require('validator');
 const keys = ['keyboard cat']
 const sessionErr =  "Your session has expired.";
 
@@ -21,9 +20,6 @@ exports.getMessages = async (req, res) => {
         // Get the message ID and timestamp from the request parameters
         const id = req.params.id
         const timestamp = req.params.timestamp
-        //1: check if this id is a valid date
-        //2: get the latest message from this db
-        //3: if the latest message is already displayed do nothing else return all
         const latestMessage = await db.Message.findAll({
             where: {imgDate: id},
             order: [['updatedAt', 'DESC']],
@@ -53,8 +49,8 @@ exports.getMessages = async (req, res) => {
 }
 
 exports.postMessage = async (req, res) => {
+    const cookies = new Cookies(req, res, {keys: keys});
     if (!req.session || !req.session.isLoggedIn) {
-        const cookies = new Cookies(req, res, {keys: keys});
         setCookieMessage(cookies, sessionErr, 3);
         res.status(369).send();
     }
@@ -75,8 +71,12 @@ exports.postMessage = async (req, res) => {
                 content: message,
                 email: email,
                 isDeleted: false
+            }).catch(err=>{
+                if (err instanceof Sequelize.ValidationError){
+                    res.status(402).send(err.errors[0].message);
+                }
             });
-
+            console.log('added');
             res.status(200).send({message: 'Message added successfully.'})
         }
     }
@@ -132,8 +132,9 @@ const setDeleteTimer = (id, createdAt, email) => {
 /** Validation Management. */
 let validationBundle = {};
 (function validationFunctions(validation) {
-    const validateMessage = (message) => {
-        return (message !== undefined && message !== null && (0 < message.trim().length <= 128) && (message.trim()))
+    const Validator = require('validator');
+    function validateMessage(message) {
+       return (Validator.isLength(message.trim(), {min: 1, max: 128}))
     }
     const validateID = (id) => {
         // NASA date format: YYYY-MM-DD

@@ -2,10 +2,10 @@
 
 /** DOMContentLoaded listener. */
 document.addEventListener("DOMContentLoaded", function () {
-    const manager = webManagement.manager
+
     const display = displayManagement.display
     // Sets the default date to today.
-    document.getElementById("endDate").value = manager.getToday()
+    document.getElementById("endDate").value = getToday()
     const modal = document.getElementById("exampleModal");
     modal.addEventListener("hidden.bs.modal", (ev) => {
         const modalImg = document.getElementById('modalImage');
@@ -47,10 +47,11 @@ const appendMultiple = (className, ...data) => {
     return div
 };
 //-------------------------------------------//
-
+let errorDisplay = createElement('div', 'btn btn-danger disabled')
 /** Display Management. */
 let displayManagement = {};
 (function displayFunctions(display) {
+
     const batchSize = 3; // Size of the images batch.
     let displayIndex = 0 // Index of the display.
 
@@ -323,51 +324,14 @@ let displayManagement = {};
     display.display = {displayImagesFromURL}
 }(displayManagement));
 
-/** Web Management. */
-let webManagement = {};
-(function managementFunctions(management) {
-    /***
-     * Function to get the date of today.
-     * @returns {Date} - today's date.
-     */
-    const getToday = () => {
-        let today = new Date()
-        let dd = String(today.getDate()).padStart(2, '0')
-        let mm = String(today.getMonth() + 1).padStart(2, '0') //January is 0!
-        let yyyy = today.getFullYear()
-        today = yyyy + '-' + mm + '-' + dd
-        return today
-    }
-    /***
-     * Function to validate the submitted name of the user.
-     * @param event - submit event of the name.
-     */
-    const validateName = (event) => {
-        event.preventDefault()
-        name = document.getElementById("name").value.trim()
-
-        if (name.length <= 24 && name.length > 0 && !(/\W/.test(name)))
-            toggleHid("preLogin", "afterLogin", "invalidName")
-        else
-            document.getElementById("invalidName").removeAttribute("hidden")
-    }
-    /***
-     * Function to toggle the 'hidden' attribute.
-     * @param id - id of the element.
-     */
-    const toggleHid = (...id) => {
-        id.forEach(elem => {
-            let element = document.getElementById(elem);
-            let hidden = element.getAttribute("hidden");
-            if (hidden)
-                element.removeAttribute("hidden");
-            else
-                element.setAttribute("hidden", "hidden");
-        })
-    }
-
-    management.manager = {getToday, validateName};
-}(webManagement));
+const getToday = () => {
+    let today = new Date()
+    let dd = String(today.getDate()).padStart(2, '0')
+    let mm = String(today.getMonth() + 1).padStart(2, '0') //January is 0!
+    let yyyy = today.getFullYear()
+    today = yyyy + '-' + mm + '-' + dd
+    return today
+}
 
 /** Messages Management. */
 let messagesManagement = {};
@@ -378,6 +342,7 @@ let messagesManagement = {};
     let isValid = true;
 
     function handleErrMsg(msg) {
+        isValid = false;
         return (msg === 'Failed to fetch') ? 'Internal server error' : msg;
     }
 
@@ -458,7 +423,6 @@ let messagesManagement = {};
      * @param index - of the comment to delete.
      */
     const deleteComment = (id, email, createdAt) => {
-        let displayBtn = document.getElementById(`errorBtn${id}`)
         let spinner = animatedGif('loading-spinner');
         fetch(`/admin/deleteMessage`, {
             method: 'DELETE',
@@ -468,9 +432,9 @@ let messagesManagement = {};
             }
         })
             .then(handleResponse)
-            .then(response => { validateOrThrow(id, displayBtn, response); })
+            .then(response => { validateOrThrow(id, errorDisplay, response); })
             .catch((err)=>{
-                displayResponse(displayBtn, handleErrMsg(err.message));
+                displayResponse(errorDisplay, handleErrMsg(err.message));
             })
             .finally(() => {
             setTimeout(() => {
@@ -511,7 +475,9 @@ let messagesManagement = {};
      * @param isValid - boolean which tells valid/invalid.
      */
     const displayResponse = (infoBtn, message) => {
-        infoBtn.innerHTML = message
+        if(!(infoBtn && message))
+            return;
+            infoBtn.innerHTML = message
         infoBtn.className = isValid ? 'btn btn-success' : 'btn btn-danger'
         infoBtn.removeAttribute('hidden')
         setTimeout(function () {
@@ -526,8 +492,6 @@ let messagesManagement = {};
     const createMsgArea = (id) => {
         let message = ""
         let messageBox = getTextArea(id, 5, 33, false, "What's on your mind? (up to 128 characters)")
-        let errorDisplay = createElement('div', 'btn btn-danger disabled')
-        errorDisplay.id = `errorBtn${id}`
         errorDisplay.setAttribute('hidden', 'hidden')
         const intervalID = setMessagesTimer(id, errorDisplay);
         document.querySelector(".dynamicId").id = intervalID.toString();

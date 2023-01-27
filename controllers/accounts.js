@@ -13,11 +13,15 @@ const keys = ['keyboard cat']
 
 
 /**
- * @param req
- * @param res
- * @param next
+ getRegister is a middleware function that handles the GET request for the registration page.
+ It checks if the user is already logged in, if so redirects them to the main page.
+ Otherwise, it creates a new instance of the Cookies class to handle cookies,
+ retrieves the 'user' and 'dynamicMessage' cookies,
+ sets message and data variables based on the cookies values.
+ Then it renders the registration page, passing in the page title,
+ dynamic message, path, email, firstname, and lastname as variables to be used in the template.
  */
-exports.getRegister = (req, res, next) => {
+exports.getRegister = (req, res) => {
     if (req.session.isLoggedIn)
         res.redirect("/admin/get-main");
     else {
@@ -44,10 +48,10 @@ exports.getRegister = (req, res, next) => {
 };
 
 /**
- * @param req - request from 'registration'
- * @param res - next page which will displayed after this request was made by a user
- * @param next - ?
- * This function is triggered from admin after receiving a request for the url
+ postRegister is a middleware function that handles the POST request for the registration page.
+ It validates the provided email, firstname and lastname,
+ checks if the email is already registered in the db,
+ sets a cookie, redirects to the register-password page or throws an error and redirects to the registration page.
  */
 exports.postRegister = async (req, res, next) => {
     const cookies = new Cookies(req, res, {keys: keys});
@@ -73,6 +77,7 @@ exports.postRegister = async (req, res, next) => {
 /**
  * @param user - the user's first registration page data (email, firstname, lastname).
  * This function validates the user's input after the user requested to continue to the register-password page.
+ * If all inputs are valid, it would return nothing, else it will throw an error
  */
 function validateUser(user) {
     // Email validation
@@ -88,9 +93,10 @@ function validateUser(user) {
 }
 
 /**
- * @param req -
- * @param res
- * @param next
+ getLogin is a middleware function that handles the GET request for the login page.
+ If the user already has an open session, it redirects them to the admin/get-main page.
+ Otherwise, it renders the login page, passing the email and any error messages that were set in a cookie.
+ It also clears the dynamicMessage cookie after it's been read.
  */
 exports.getLogin = (req, res, next) => {
     //If user has an open session
@@ -115,6 +121,10 @@ exports.getLogin = (req, res, next) => {
     }
 };
 
+/**
+ postLogin is a middleware function that handles the POST request for the login page.
+ If the user already has an open session, it destroys the session and redirects to the homepage.
+ */
 exports.postLogin = (req, res, next) => {
     if (req.session.isLoggedIn)
         req.session.destroy();
@@ -138,8 +148,14 @@ exports.getMain = (req, res, next) => {
         res.redirect('/');
     }
 };
-
-exports.postMain = async (req, res, next) => {
+/**
+ *  a middleware function that is executed when a GET request is made to the
+ *  '/admin/after-login' route. It checks if the user has an active session by checking the
+ *  'isLoggedIn' property on the session object. If the session is active,the user is welcomed by name.
+ *  If the session is not active, the user is redirected to the login page and a message is set in the cookie to inform
+ *  the user that their session has expired.
+ **/
+exports.postMain = async (req, res) => {
     const cookies = new Cookies(req, res, {keys: keys});
     try { //converting email to lowercase since we want email field to be case-insensitive.
         const isRegisteredUser = await db.User.findOne({where: {email: req.body.email.toLowerCase()}});
