@@ -1,6 +1,6 @@
 const Cookies = require('cookies');
 const {QueryTypes, Sequelize} = require('sequelize');
-let Validator = require('validator');
+const Validator = require('validator');
 const bcrypt = require('bcrypt');
 
 // the controllers folder allows us to separate the logic from the routes.

@@ -160,9 +160,7 @@ let displayManagement = {};
                 document.getElementById("modalBtn").click()
                 const modalComments = document.getElementById("commentModalSection");
                 modalComments.removeChild(modalComments.firstChild);
-                const messagesCol = getMessagesCol(imgId);
-                modalComments.append(messagesCol.messagesCol);
-                document.querySelector(".dynamicId").id = messagesCol.intervalId
+                modalComments.append(getMessagesCol(imgId));
             })
         }
         return media
@@ -261,13 +259,10 @@ let displayManagement = {};
         messagesCol.append(createCommentSection(id))
         messagesManager.loadComments(id)
         messagesManager.idUpdateStamps.set(id, Date.now())
-        let intervalId = messagesManager.setMessagesTimer(id)
         messagesCol.append(messagesManager.createMsgArea(id, messagesCol))
+
         messagesCol.style.marginTop = "18px"
-        return {
-            messagesCol: messagesCol,
-            intervalId: intervalId
-        }
+        return messagesCol;
     }
     /***
      * Function to create the scrolling event listener.
@@ -380,6 +375,32 @@ let messagesManagement = {};
     // Timestamps for the updates of the comments on the images.
     // Key : ID (date of the image), Value : Last update time.
     const idUpdateStamps = new Map()
+    let isValid = true;
+
+    function handleErrMsg(msg) {
+        return (msg === 'Failed to fetch') ? 'Internal server error' : msg;
+    }
+
+    function validateOrThrow(id, dynamicMsg, response) {
+        if (isValid) {
+            displayResponse(dynamicMsg, response.message)
+            loadComments(id, dynamicMsg)
+        }
+        else throw new Error(response.message);
+    }
+    function handleResponse(response) {
+        isValid = true;
+        if (response.ok) {
+            return response.json();
+        } else {
+            isValid = false;
+            if (response.status === 369) {
+                location.href = "/";
+            } else {
+                return response.json();
+            }
+        }
+    }
 
     /***
      * Get request.
@@ -390,27 +411,17 @@ let messagesManagement = {};
         let spinner = animatedGif('loading-spinner');
 
         fetch(`/admin/messages/${imgDate}/${timer}`)
-            .then(function (response) {
-                //Checking the status of what the server returned.
-                if (response.ok)
-                    return response.json()
-                else throw new Error(response.status)
-            })
-            .then(messages => {
-                if (messages) {
-                    updateComments(imgDate, messages)
-                }
-            })
-            .catch(error => {
-                displayResponse(dynamicMsg, 'Internal server error');
-                if (error === "No new messages")
-                    return null;
-                displayResponse(dynamicMsg, 'Internal server error');
+            .then(handleResponse)
+            .then(response => {
+                if (isValid)
+                    updateComments(imgDate, response);
+                else throw new Error(response.message);
+            }).catch(error => {
+                displayResponse(dynamicMsg, handleErrMsg(error.message));
             }).finally(() => {
-            setTimeout(() => {
-                console.log('shutting the spinner down');
-                spinner.classList.add('d-none');
-            }, 500)
+                setTimeout(() => {
+                    spinner.classList.add('d-none');
+                }, 500)
         })
     }
 
@@ -422,7 +433,6 @@ let messagesManagement = {};
      * @param errorDisplay - error if any.
      */
     const postComment = (id, message, errorDisplay) => {
-        let isValid = true
         let spinner = animatedGif('loading-spinner');
         fetch(`/admin/messages`, {
             method: 'POST',
@@ -431,27 +441,15 @@ let messagesManagement = {};
             },
             body: JSON.stringify({id: id, message: message})
         })
-            .then(function (response) {
-                if (response.ok)
-                    return response.json()
-                else //Displaying the error message
-                {
-                    isValid = false
-                    return response.json()
-                }
-            })
-            .then(response => {
-                if (isValid)
-                    loadComments(id, errorDisplay)
-                displayResponse(errorDisplay, response.message, isValid)
-            })
-            .catch((err)=>{
-                displayResponse(errorDisplay, 'Internal server error');
+            .then(handleResponse)
+            .then(response => { validateOrThrow(id, errorDisplay, response); })
+            .catch((error)=>{
+                displayResponse(errorDisplay, handleErrMsg(error.message));
             })
             .finally(() => {
-            setTimeout(() => {
-                spinner.classList.add('d-none');
-            }, 500)
+                setTimeout(() => {
+                    spinner.classList.add('d-none');
+                }, 500)
         })
     }
     /***
@@ -461,7 +459,6 @@ let messagesManagement = {};
      */
     const deleteComment = (id, email, createdAt) => {
         let displayBtn = document.getElementById(`errorBtn${id}`)
-        let isValid = true
         let spinner = animatedGif('loading-spinner');
         fetch(`/admin/deleteMessage`, {
             method: 'DELETE',
@@ -469,17 +466,11 @@ let messagesManagement = {};
             headers: {
                 'Content-Type': 'application/json'
             }
-        }).then(response => {
-            if (!response.ok)
-                isValid = false
-            return response.json()
-        }).then((response) => {
-            if (isValid)
-                loadComments(id, displayBtn)
-            displayResponse(displayBtn, response.message, isValid)
         })
+            .then(handleResponse)
+            .then(response => { validateOrThrow(id, displayBtn, response); })
             .catch((err)=>{
-                displayResponse(displayBtn, 'Internal server error');
+                displayResponse(displayBtn, handleErrMsg(err.message));
             })
             .finally(() => {
             setTimeout(() => {
@@ -519,7 +510,7 @@ let messagesManagement = {};
      * @param message - the response message.
      * @param isValid - boolean which tells valid/invalid.
      */
-    const displayResponse = (infoBtn, message, isValid = false) => {
+    const displayResponse = (infoBtn, message) => {
         infoBtn.innerHTML = message
         infoBtn.className = isValid ? 'btn btn-success' : 'btn btn-danger'
         infoBtn.removeAttribute('hidden')
@@ -538,6 +529,8 @@ let messagesManagement = {};
         let errorDisplay = createElement('div', 'btn btn-danger disabled')
         errorDisplay.id = `errorBtn${id}`
         errorDisplay.setAttribute('hidden', 'hidden')
+        const intervalID = setMessagesTimer(id, errorDisplay);
+        document.querySelector(".dynamicId").id = intervalID.toString();
         messageBox.addEventListener('input', function (event) {
             message = event.target.value
         })
@@ -616,9 +609,9 @@ let messagesManagement = {};
      * Function to set the timer on the messages (15 seconds).
      * @param id - of the image.
      */
-    const setMessagesTimer = (id) => {
+    const setMessagesTimer = (id, dynamicMsg) => {
         const intervalId = setInterval(function () {
-            loadComments(id)
+            loadComments(id, dynamicMsg)
             idUpdateStamps.set(id, Date.now())
         }, 15000)
         return intervalId;
