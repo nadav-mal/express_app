@@ -20,10 +20,9 @@ exports.getMessages = async (req, res) => {
         order: [['updatedAt', 'DESC']],
         limit: 1
     });
-
     if (latestMessage[0]) {
         const message = latestMessage[0]; //messages is the array of messages. since limit is 1 there's only one
-        if (message && message.dataValues) {
+        if (message.dataValues) {
             const updatedAt = message.dataValues.updatedAt; //After adding status, it will be message.dataValues.updatedAt
             const updatedAtEpoch = new Date(updatedAt).getTime(); //converting to epoch
 
@@ -32,17 +31,15 @@ exports.getMessages = async (req, res) => {
                     where: {imgDate: id, isDeleted: false},
                     order: [['updatedAt', 'ASC']] //(oldest first)
                 })
-                if (messages){
+                if (messages)
                     res.status(200).json(messages);
-                }
-                 else{
-                    res.status(300).send({message: 'No messages on this post'});
-                }
             }
             else
                 res.status(325).send({message: 'You are up to date!'});
         }
     }
+    else
+        res.status(300).send({message: 'No messages on this post'});
 }
 
 exports.postMessage = async (req, res) => {
@@ -58,8 +55,6 @@ exports.postMessage = async (req, res) => {
         res.status(400).send({message: 'Comment contains spaces only.'})
     else if (!validators.validateID(imgDate))
         res.status(400).send({message: 'Invalid date format (YYYY-MM-DD).'})
-        //else if (!validators.validateUsername(username))
-    //    res.status(400).send({message: 'Invalid username.'})
     else {
         // Return a success response
         db.Message.create({

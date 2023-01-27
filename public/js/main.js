@@ -9,10 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("exampleModal");
     modal.addEventListener("hidden.bs.modal", (ev) => {
         const modalImg = document.getElementById('modalImage');
-        let id = document.getElementsByClassName("dynamicId")[0].id
-        let realID = document.querySelector(".dynamicId").id
-        console.log("ID: " + id)
-        console.log("2nd ID: " + realID)
+        let id = document.querySelector(".dynamicId").id
         clearInterval(id);
     });
     // Displays the images from the submitted date and onward.
@@ -49,7 +46,6 @@ const appendMultiple = (className, ...data) => {
     })
     return div
 };
-
 //-------------------------------------------//
 
 /** Display Management. */
@@ -384,36 +380,35 @@ let messagesManagement = {};
     // Timestamps for the updates of the comments on the images.
     // Key : ID (date of the image), Value : Last update time.
     const idUpdateStamps = new Map()
-
+    const dynamicMessageArea =
     /***
      * Get request.
      * @param imgDate - the date of the image to start fetching from.
      */
-    function loadComments(imgDate) {
+    function loadComments(imgDate, dynamicMsg) {
         let timer = idUpdateStamps.get(imgDate);
         let spinner = animatedGif('loading-spinner');
+
         fetch(`/admin/messages/${imgDate}/${timer}`)
             .then(function (response) {
                 //Checking the status of what the server returned.
                 if (response.ok)
                     return response.json()
-                else if (response.status === 300 || response.status === 325)//No messages
-                    return null
-                else
-                    throw new Error("Unexpected error from server")
+                else throw new Error(response.status)
             })
             .then(messages => {
                 if (messages) {
                     updateComments(imgDate, messages)
                 }
-
             })
             .catch(error => {
+                displayResponse(dynamicMsg, 'Internal server error');
                 if (error === "No new messages")
                     return null;
-                console.log(error);
+                displayResponse(dynamicMsg, 'Internal server error');
             }).finally(() => {
             setTimeout(() => {
+                console.log('shutting the spinner down');
                 spinner.classList.add('d-none');
             }, 500)
         })
@@ -447,9 +442,13 @@ let messagesManagement = {};
             })
             .then(response => {
                 if (isValid)
-                    loadComments(id)
+                    loadComments(id, errorDisplay)
                 displayResponse(errorDisplay, response.message, isValid)
-            }).finally(() => {
+            })
+            .catch((err)=>{
+                displayResponse(errorDisplay, 'Internal server error');
+            })
+            .finally(() => {
             setTimeout(() => {
                 spinner.classList.add('d-none');
             }, 500)
@@ -476,9 +475,13 @@ let messagesManagement = {};
             return response.json()
         }).then((response) => {
             if (isValid)
-                loadComments(id)
+                loadComments(id, displayBtn)
             displayResponse(displayBtn, response.message, isValid)
-        }).finally(() => {
+        })
+            .catch((err)=>{
+                displayResponse(displayBtn, 'Internal server error');
+            })
+            .finally(() => {
             setTimeout(() => {
                 spinner.classList.add('d-none');
             }, 500)
@@ -522,7 +525,7 @@ let messagesManagement = {};
         infoBtn.removeAttribute('hidden')
         setTimeout(function () {
             infoBtn.setAttribute('hidden', 'hidden')
-        }, 2000)
+        }, 2500)
     }
     /***
      * Function to create the message area.

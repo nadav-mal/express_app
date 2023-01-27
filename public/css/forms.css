@@ -23,11 +23,12 @@
     outline-color: #00695c;
 }
 
-.account-form {
+.account-form{
     width: 30rem;
     max-width: 90%;
     margin: auto;
 }
+
 .nasa-form {
     width: 30rem;
     max-width: 90%;

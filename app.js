@@ -12,6 +12,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
+
 // load the routes
 const adminRoutes = require('./routes/admin');
 const loginRoutes = require('./routes/login');
@@ -35,14 +36,11 @@ var sequelize = new Sequelize(
     config
 );
 
-// initalize sequelize with session store
+// initialize sequelize with session store
 var SequelizeSession = require('connect-session-sequelize')(session.Store);
 var mySession = new SequelizeSession({
     db: sequelize
 });
-
-
-
 // enable sessions
 app.use(session({
     secret:"somesecretkey",
@@ -51,12 +49,12 @@ app.use(session({
     saveUninitialized: false, // Save a session that is new, but has not been modified
     cookie: {maxAge: 10*60*1000 } // milliseconds!
 }));
-
 //Ignore driver cache
 app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store')
     next()
 });
+
 
 mySession.sync(); // this creates the session tables in your database
 
@@ -64,8 +62,13 @@ mySession.sync(); // this creates the session tables in your database
 app.use('/admin', adminRoutes);
 app.use(loginRoutes);
 
+app.use(function (req, res, next) {
+    res.status(404);
+    res.render('404.ejs', {url: req.url,
+        pageTitle: 'Error 404, page not found.'});
+});
+
 // plug in the error controller
 //app.use(errorController.get404);
 let port = process.env.PORT || 3000;
 app.listen(port);
-
