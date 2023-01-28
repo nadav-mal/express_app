@@ -17,10 +17,10 @@ exports.getMessages = async (req, res) => {
         res.status(369).send({message: sessionErr});
     } else {
         const validators = validationBundle.getAndDeleteValidation
-        if(!validators.validateID(id))
-            res.status(402).send({message: 'An invalid date format was given.'})
         // Get the message ID and timestamp from the request parameters
         const id = req.params.id
+        if(!validators.validateID(id))
+            res.status(402).send({message: 'An invalid date format was given.'})
         const timestamp = req.params.timestamp
         const latestMessage = await db.Message.findAll({
             where: {imgDate: id},
