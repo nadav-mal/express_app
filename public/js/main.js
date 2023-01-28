@@ -2,7 +2,6 @@
 
 /** DOMContentLoaded listener. */
 document.addEventListener("DOMContentLoaded", function () {
-
     const display = displayManagement.display
     // Sets the default date to today.
     document.getElementById("endDate").value = getToday()
@@ -55,6 +54,11 @@ let displayManagement = {};
     const batchSize = 3; // Size of the images batch.
     let displayIndex = 0 // Index of the display.
 
+    /***
+     * This function makes fetches to the NASA API.
+     * @param isFirst a boolean value that indicate whether this is the first time the function is being called.
+     * @param endDate a date value that represents the end date for the date range of the images being fetched.
+     */
     const fetchFromNasa = (isFirst, endDate) => {
         let isValid = true
         let spinner = animatedGif("images-fetch-spinner");
@@ -85,7 +89,7 @@ let displayManagement = {};
         }).finally(() => {
             setTimeout(() => {
                 spinner.classList.add('d-none');
-            }, 2000)
+            }, 1000)
         });
     }
     /***
@@ -324,6 +328,10 @@ let displayManagement = {};
     display.display = {displayImagesFromURL}
 }(displayManagement));
 
+/***
+ * Returns the date of today.
+ * @returns {Date} of today.
+ */
 const getToday = () => {
     let today = new Date()
     let dd = String(today.getDate()).padStart(2, '0')
@@ -341,11 +349,22 @@ let messagesManagement = {};
     const idUpdateStamps = new Map()
     let isValid = true;
 
+    /***
+     * Handles special error message.
+     * @param msg - the err message.
+     * @returns {string|*} - a string as the message.
+     */
     function handleErrMsg(msg) {
         isValid = false;
         return (msg === 'Failed to fetch') ? 'Internal server error' : msg;
     }
 
+    /***
+     * Middleware to validate or throw errors.
+     * @param id - of the image.
+     * @param dynamicMsg - the element which the message is displayed on.
+     * @param response - the response from the API.
+     */
     function validateOrThrow(id, dynamicMsg, response) {
 
         if (isValid) {
@@ -354,6 +373,12 @@ let messagesManagement = {};
         }
         else throw new Error(response.message);
     }
+
+    /***
+     * Generic middleware to handle responses.
+     * @param response - from the API.
+     * @returns {*} response as json.
+     */
     function handleResponse(response) {
 
         isValid = true;
@@ -587,7 +612,11 @@ let messagesManagement = {};
 }(messagesManagement));
 
 //-------------------------------------------//
-
+/***
+ *
+ * @param id
+ * @returns {HTMLElement}
+ */
 function animatedGif(id) {
     let spinner = document.getElementById(id);
     spinner.classList.remove('d-none');
