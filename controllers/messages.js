@@ -17,6 +17,8 @@ exports.getMessages = async (req, res) => {
         res.status(369).send({message: sessionErr});
     } else {
         const validators = validationBundle.getAndDeleteValidation
+        if(!validators.validateID(id))
+            res.status(402).send({message: 'An invalid date format was given.'})
         // Get the message ID and timestamp from the request parameters
         const id = req.params.id
         const timestamp = req.params.timestamp
@@ -103,7 +105,7 @@ exports.deleteMessage = async (req, res) => {
         let email = req.body.email;
         let createdAt = req.body.createdAt;
         if (validators.validateID(id)) {
-            let msg = await db.Message.findOne({
+            await db.Message.findOne({
                 where: {
                     imgDate: id,
                     createdAt: createdAt,

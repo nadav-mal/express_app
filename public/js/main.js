@@ -6,8 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Sets the default date to today.
     document.getElementById("endDate").value = getToday()
     const modal = document.getElementById("exampleModal");
-    modal.addEventListener("hidden.bs.modal", (ev) => {
-        const modalImg = document.getElementById('modalImage');
+    modal.addEventListener("hidden.bs.modal", () => {
         let id = document.querySelector(".dynamicId").id
         clearInterval(id);
     });
@@ -149,6 +148,7 @@ let displayManagement = {};
      * Function to get a media element.
      * @param url - of the media.
      * @param isImage - boolean which states image/video.
+     * @param imgId - the date of the given image
      * @returns {*} - media element.
      */
     const getMediaElement = (url, isImage, imgId) => {
@@ -351,7 +351,7 @@ let messagesManagement = {};
 
     /***
      * Handles special error message.
-     * @param msg - the err message.
+     * @param msg - the error message.
      * @returns {string|*} - a string as the message.
      */
     function handleErrMsg(msg) {
@@ -396,6 +396,7 @@ let messagesManagement = {};
 
     /***
      * Get request.
+     * @param dynamicMsg - The area in which we display dynamic messages.
      * @param imgDate - the date of the image to start fetching from.
      */
     function loadComments(imgDate, dynamicMsg) {
@@ -421,7 +422,6 @@ let messagesManagement = {};
      * Post request.
      * @param id - of the image of post on.
      * @param message - the submitted message.
-     * @param username - username of submitter.
      * @param errorDisplay - error if any.
      */
     const postComment = (id, message, errorDisplay) => {
@@ -447,7 +447,8 @@ let messagesManagement = {};
     /***
      * Delete request.
      * @param id - of the image on which the comment is posted.
-     * @param index - of the comment to delete.
+     * @param email - the email of the user who added this comment
+     * @param createdAt - The timestamp in which the comment was added to the db
      */
     const deleteComment = (id, email, createdAt) => {
         let spinner = animatedGif('loading-spinner');
@@ -499,7 +500,6 @@ let messagesManagement = {};
      * Function to display the response to the user.
      * @param infoBtn - info regarding the state.
      * @param message - the response message.
-     * @param isValid - boolean which tells valid/invalid.
      */
     const displayResponse = (infoBtn, message) => {
         if(!(infoBtn && message))
@@ -570,7 +570,6 @@ let messagesManagement = {};
      * Function to make a message grid.
      * @param message - the message content.
      * @param id - id of the image.
-     * @param index - index of the comment.
      * @returns {*} - a list item element.
      */
     const makeMessageGrid = (message, id) => {
@@ -599,15 +598,14 @@ let messagesManagement = {};
     /***
      * Function to set the timer on the messages (15 seconds).
      * @param id - of the image.
+     * @param  dynamicMsg - The area in which we display dynamic messages to the user
      */
     const setMessagesTimer = (id, dynamicMsg) => {
-        const intervalId = setInterval(function () {
+        return setInterval(function () {
             loadComments(id, dynamicMsg)
             idUpdateStamps.set(id, Date.now())
         }, 15000)
-        return intervalId;
     }
-
     messageManager.messagesCol = {idUpdateStamps, loadComments, createMsgArea, setMessagesTimer};
 }(messagesManagement));
 
