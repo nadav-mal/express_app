@@ -7,15 +7,14 @@ const {QueryTypes, Sequelize} = require('sequelize');
 const db = require('../models');
 const Cookies = require("cookies");
 const keys = ['keyboard cat']
-const sessionErr =  "Your session has expired.";
+const sessionErr = "Your session has expired.";
 
 exports.getMessages = async (req, res) => {
     if (!req.session || !req.session.isLoggedIn) {
         const cookies = new Cookies(req, res, {keys: keys});
         setCookieMessage(cookies, sessionErr, 3);
         res.status(369).send({message: sessionErr});
-    }
-    else {
+    } else {
         const validators = validationBundle.getAndDeleteValidation
         // Get the message ID and timestamp from the request parameters
         const id = req.params.id
@@ -38,12 +37,10 @@ exports.getMessages = async (req, res) => {
                     })
                     if (messages)
                         res.status(200).json(messages);
-                }
-                else
+                } else
                     res.status(325).send({message: 'You are up to date!'});
             }
-        }
-        else
+        } else
             res.status(300).send({message: 'No messages on this post'});
     }
 }
@@ -53,51 +50,51 @@ exports.postMessage = async (req, res) => {
     if (!req.session || !req.session.isLoggedIn) {
         setCookieMessage(cookies, sessionErr, 3);
         res.status(369).send();
-    }
-    else {
+    } else {
         console.log('starting validation')
         const validators = validationBundle.postValidation
         // Get the message text, id and username from the request body
         const message = req.body.message
         const imgDate = req.body.id
         const email = req.session.email
-
-            // Return a success response
+        if (!(validators.validateID(imgDate) && validators.validateMessage(message)))
+            res.status(402).send({message: 'An invalid request.'});
+        else {
             db.Message.create({
-                imgDate: imgDate,
-                content: message,
-                email: email,
-                isDeleted: false}
-            ).then(()=>{
-                res.status(200).send({message : 'Message added successfully'});
-            })
-                .catch(err=>{
-                console.log(err);
-                res.status(402).send()
-                if (err instanceof Sequelize.ValidationError){
-                    res.status(402).send(err.errors[0].message);
-                }else{
-                    console.log('added');
-                    res.status(200).send({message: 'Message added successfully.'})
+                    imgDate: imgDate,
+                    content: message,
+                    email: email,
+                    isDeleted: false
                 }
-            });
+            ).then(() => {
+                res.status(200).send({message: 'Message added successfully'});
+            })
+                .catch(err => {
+                    if (err instanceof Sequelize.ValidationError) {
+                        res.status(402).send(err.errors[0].message);
+                    } else {
+                        res.status(200).send({message: 'Message added successfully.'})
+                    }
+                });
         }
+    }
 }
 
-
+/**
+ This function handles deletion of a message by an authenticated user. It checks session, validates message data,
+ marks message as deleted, sets a timer for permanent deletion, and sends success/failure status & message.
+ */
 exports.deleteMessage = async (req, res) => {
     if (!req.session || !req.session.isLoggedIn) {
         const cookies = new Cookies(req, res, {keys: keys});
         setCookieMessage(cookies, sessionErr, 3);
         res.status(369).send();
-    }
-    else {
+    } else {
         const validators = validationBundle.getAndDeleteValidation;
         let id = req.body.id;
         let email = req.body.email;
         let createdAt = req.body.createdAt;
-        if (validators.validateID(id))
-        {
+        if (validators.validateID(id)) {
             let msg = await db.Message.findOne({
                 where: {
                     imgDate: id,
@@ -115,11 +112,18 @@ exports.deleteMessage = async (req, res) => {
                 }
             });
             res.status(200).send({message: `Message removed successfully`})
-        }
-        else res.status(402).send({message: `Oops... seems like request is invalid!`})
+        } else res.status(402).send({message: `Oops... seems like request is invalid!`})
     }
 };
-
+/**
+ setDeleteTimer is a function that schedules the deletion of a message from the database after a certain amount of time.
+ It takes in three parameters:
+ @param {string} id - The id of the message that needs to be deleted.
+ @param {string} createdAt - The timestamp of when the message was created.
+ @param {string} email - The email address of the user who sent the message.
+ The function uses the setTimeout method to schedule the deletion of the message from the database
+ after 20 seconds (20000 milliseconds) have passed.
+ */
 const setDeleteTimer = (id, createdAt, email) => {
     setTimeout(() => {
         db.Message.destroy({
@@ -136,9 +140,11 @@ const setDeleteTimer = (id, createdAt, email) => {
 let validationBundle = {};
 (function validationFunctions(validation) {
     const Validator = require('validator');
+
     function validateMessage(message) {
-       return (Validator.isLength(message.trim(), {min: 1, max: 128}))
+        return (Validator.isLength(message.trim(), {min: 1, max: 128}))
     }
+
     const validateID = (id) => {
         // NASA date format: YYYY-MM-DD
         const regex = /^\d{4}-\d{2}-\d{2}$/;
@@ -147,7 +153,6 @@ let validationBundle = {};
 
     validation.postValidation = {validateID, validateMessage};
     validation.getAndDeleteValidation = {validateID};
-
 }(validationBundle));
 
 const setCookieMessage = (cookies, dynamicMessage, seconds) => {

@@ -7,7 +7,7 @@
 
     <div class="container">
         <div class="row">
-            <form class="account-form" action="/admin/get-main" method="POST">
+            <form class="account-form" action="/get-main" method="POST">
                 <%- include('includes/icon.ejs') %>
                 <h3 id="pageTitle">Please sign in</h3>
                 <div class="form-control">
@@ -19,7 +19,7 @@
                     <input type="password" name="password" id="password" maxlength="32" required>
                     <button type="submit" class="btn btn-primary">Sign in</button>
                     <br>
-                    <a href="/admin/register">Need to register?</a>
+                    <a href="/register">Need to register?</a>
                 </div>
             </form>
         </div>

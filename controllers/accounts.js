@@ -25,7 +25,7 @@ const keys = ['keyboard cat']
  */
 exports.getRegister = (req, res) => {
     if (req.session.isLoggedIn)
-        res.redirect("/admin/get-main");
+        res.redirect("/get-main");
     else {
         const cookies = new Cookies(req, res, {keys: keys});
         const user = cookies.get('user');
@@ -41,7 +41,7 @@ exports.getRegister = (req, res) => {
         res.render('registration', {
             pageTitle: 'Registration',
             dynamicMessage: message ? message.dynamicMessage : '',
-            path: '/admin/register',
+            path: '/register',
             email: data ? data.email : '',
             firstname: data ? data.firstname : '',
             lastname: data ? data.lastname : ''
@@ -68,11 +68,11 @@ exports.postRegister = async (req, res) => {
             throw new Error('This email is already taken.');
         }
         cookies.set('user', JSON.stringify(userData), {singed: true, maxAge: 30 * 1000});
-        res.redirect('/admin/register-password');
+        res.redirect('/register-password');
     } catch (err) {
         // TO DO! we must handle the error here and generate a EJS page to display the error.
         setCookieMessage(cookies, err.message, 3);
-        res.redirect('/admin/register');
+        res.redirect('/register');
     }
 };
 
@@ -135,7 +135,7 @@ exports.postLogin = (req, res) => {
 }
 /**
  *  a middleware function that is executed when a GET request is made to the
- *  '/admin/after-login' route. It checks if the user has an active session by checking the
+ *  '/after-login' route. It checks if the user has an active session by checking the
  *  'isLoggedIn' property on the session object. If the session is active,the user is welcomed by name.
  *  If the session is not active, the user is redirected to the login page and a message is set in the cookie to inform
  *  the user that their session has expired.
@@ -184,16 +184,16 @@ exports.postMain = async (req, res) => {
 };
 /**
  * This function handles a route in an Express.js application, checking if the user is logged in. If they are,
- * they are redirected to "/admin/get-main", otherwise they are shown the "register-password" template.
+ * they are redirected to "/get-main", otherwise they are shown the "register-password" template.
  */
 exports.getRegisterPassword = (req, res) => {
     if (req.session.isLoggedIn)
-        res.redirect("/admin/get-main");
+        res.redirect("/get-main");
     else
         res.render('register-password', {
             pageTitle: 'register password',
             dynamicMessage: '',
-            path: '/admin/register-password',
+            path: '/register-password',
         });
 };
 /**
@@ -229,7 +229,7 @@ exports.postRegisterPassword = async (req, res) => {
                             setCookieMessage(cookies, err.errors[0].message, 2);
                         else
                             setCookieMessage(cookies,'Validation has failed, please try again.', 2);
-                        res.redirect('/admin/register')
+                        res.redirect('/register')
                     })
                 }
             } else throw new Error('Passwords are not the same!');
@@ -238,7 +238,7 @@ exports.postRegisterPassword = async (req, res) => {
         res.render('registration', {
             pageTitle: 'Registration',
             dynamicMessage: err.message,
-            path: '/admin/register',
+            path: '/register',
             email: '',
             firstname: '',
             lastname: ''
