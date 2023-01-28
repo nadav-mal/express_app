@@ -6,7 +6,6 @@ const cookieParser= require('cookie-parser')
 const bodyParser = require('body-parser');
 const session = require('express-session');
 
-const errorController = require('./controllers/error');
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -44,17 +43,16 @@ var mySession = new SequelizeSession({
 // enable sessions
 app.use(session({
     secret:"somesecretkey",
-
     resave: false, // Force save of session for each request
     saveUninitialized: false, // Save a session that is new, but has not been modified
     cookie: {maxAge: 10*60*1000 } // milliseconds!
 }));
+
 //Ignore driver cache
 app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store')
     next()
 });
-
 
 mySession.sync(); // this creates the session tables in your database
 

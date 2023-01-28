@@ -1,4 +1,3 @@
-//export let User = ;
 'use strict';
 
 const fs = require('fs');

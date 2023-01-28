@@ -1,14 +1,15 @@
 const {QueryTypes, Sequelize} = require('sequelize');
 // the controllers folder allows us to separate the logic from the routes.
-// this is a good practice because it allows us to reuse the logic in multiple routes.
-// note that this controller returns HTML only! it sometimes also redirects to other routes.
-// if it was a REST API, it would return JSON.
-// pay attention NOT TO MIX HTML and JSON in the same controller.
 const db = require('../models');
 const Cookies = require("cookies");
 const keys = ['keyboard cat']
 const sessionErr = "Your session has expired.";
 
+/***
+ * This function exports a getMessages method that handles GET requests by checking if a user is logged in,
+ * extracting message ID and timestamp from request parameters, and retrieves the latest message from the database.
+ * It compares the timestamp passed in the request with the timestamp of the latest message and retrieves all the messages from the database and sends them in JSON format.
+ */
 exports.getMessages = async (req, res) => {
     if (!req.session || !req.session.isLoggedIn) {
         const cookies = new Cookies(req, res, {keys: keys});
@@ -45,6 +46,13 @@ exports.getMessages = async (req, res) => {
     }
 }
 
+/***
+ * This function exports a postMessage method that is intended to handle HTTP POST requests.
+ * It first checks if a user is logged in by checking the session object, and if not it sets an error cookie and sends a 369 status code.
+ * If the user is logged in, it validates the request body for a valid message and ID, and if valid,
+ * it creates a new message in the database with the provided information and sends a 200 status code.
+ * If any errors occur, it sends an appropriate status code along with an error message.
+ */
 exports.postMessage = async (req, res) => {
     const cookies = new Cookies(req, res, {keys: keys});
     if (!req.session || !req.session.isLoggedIn) {
@@ -141,10 +149,20 @@ let validationBundle = {};
 (function validationFunctions(validation) {
     const Validator = require('validator');
 
+    /***
+     * Validates a message.
+     * @param message to be validated.
+     * @returns {boolean} validation confirmed or not confirmed.
+     */
     function validateMessage(message) {
         return (Validator.isLength(message.trim(), {min: 1, max: 128}))
     }
 
+    /***
+     * Validates an ID.
+     * @param id to be validated.
+     * @returns {boolean} validation confirmed or not confirmed.
+     */
     const validateID = (id) => {
         // NASA date format: YYYY-MM-DD
         const regex = /^\d{4}-\d{2}-\d{2}$/;
@@ -155,6 +173,12 @@ let validationBundle = {};
     validation.getAndDeleteValidation = {validateID};
 }(validationBundle));
 
+/***
+ * Sets a message in the cookies.
+ * @param cookies the cookies object.
+ * @param dynamicMessage the message to be set in the cookies.
+ * @param seconds - for how long to set it there.
+ */
 const setCookieMessage = (cookies, dynamicMessage, seconds) => {
     const Message = {dynamicMessage: dynamicMessage}
     cookies.set('dynamicMessage', JSON.stringify(Message), {singed: true, maxAge: seconds * 1000});
