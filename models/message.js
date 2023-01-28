@@ -13,17 +13,14 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  const isValidDateFormat = (value) => {
-    const dateFormat = /^\d{4}-\d{2}-\d{2}$/;
-    return dateFormat.test(value);
-  }
+
   Message.init({
     imgDate: {
       type: DataTypes.STRING,
       validate: {
-        isValidDateFormat: {
-          msg: 'imgDate must be in the format of yyyy-mm-dd',
-          isValidDateFormat: isValidDateFormat
+        is: {
+          args: /^\d{4}-\d{2}-\d{2}$/,
+          msg: 'imgDate must be in the format of yyyy-mm-dd'
         }
       }
     },

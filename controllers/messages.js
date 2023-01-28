@@ -55,32 +55,35 @@ exports.postMessage = async (req, res) => {
         res.status(369).send();
     }
     else {
+        console.log('starting validation')
         const validators = validationBundle.postValidation
         // Get the message text, id and username from the request body
         const message = req.body.message
         const imgDate = req.body.id
         const email = req.session.email
-        if (!validators.validateMessage(message))
-            res.status(401).send({message: 'Comment contains spaces only.'})
-        else if (!validators.validateID(imgDate))
-            res.status(400).send({message: 'Invalid date format (YYYY-MM-DD).'})
-        else {
+
             // Return a success response
             db.Message.create({
                 imgDate: imgDate,
                 content: message,
                 email: email,
-                isDeleted: false
-            }).catch(err=>{
+                isDeleted: false}
+            ).then(()=>{
+                res.status(200).send({message : 'Message added successfully'});
+            })
+                .catch(err=>{
+                console.log(err);
+                res.status(402).send()
                 if (err instanceof Sequelize.ValidationError){
                     res.status(402).send(err.errors[0].message);
+                }else{
+                    console.log('added');
+                    res.status(200).send({message: 'Message added successfully.'})
                 }
             });
-            console.log('added');
-            res.status(200).send({message: 'Message added successfully.'})
         }
-    }
 }
+
 
 exports.deleteMessage = async (req, res) => {
     if (!req.session || !req.session.isLoggedIn) {

@@ -1,16 +1,18 @@
+/**
+ * The 'accounts.js' file is a middleware that handles the registration and login schemes for the application's user
+ * accounts. It contains several functions that are responsible for different tasks related to user accounts,
+ * such as creating new accounts, logging in and logging out, and validating user input.
+ * These functions work together to ensure that user accounts are created and managed securely and efficiently.
+ * They also help to maintain the integrity of the application by ensuring that all user input is valid and in
+ * the correct format.
+ */
+
 const Cookies = require('cookies');
 const {QueryTypes, Sequelize} = require('sequelize');
 const Validator = require('validator');
 const bcrypt = require('bcrypt');
-
-// the controllers folder allows us to separate the logic from the routes.
-// this is a good practice because it allows us to reuse the logic in multiple routes.
-// note that this controller returns HTML only! it sometimes also redirects to other routes.
-// if it was a REST API, it would return JSON.
-// pay attention NOT TO MIX HTML and JSON in the same controller.
 const db = require('../models');
 const keys = ['keyboard cat']
-
 
 /**
  getRegister is a middleware function that handles the GET request for the registration page.
@@ -53,7 +55,7 @@ exports.getRegister = (req, res) => {
  checks if the email is already registered in the db,
  sets a cookie, redirects to the register-password page or throws an error and redirects to the registration page.
  */
-exports.postRegister = async (req, res, next) => {
+exports.postRegister = async (req, res) => {
     const cookies = new Cookies(req, res, {keys: keys});
     try {
         //Validating input before checking in db
@@ -98,7 +100,7 @@ function validateUser(user) {
  Otherwise, it renders the login page, passing the email and any error messages that were set in a cookie.
  It also clears the dynamicMessage cookie after it's been read.
  */
-exports.getLogin = (req, res, next) => {
+exports.getLogin = (req, res) => {
     //If user has an open session
     if (req.session.isLoggedIn)
         res.redirect('admin/get-main');
@@ -125,14 +127,20 @@ exports.getLogin = (req, res, next) => {
  postLogin is a middleware function that handles the POST request for the login page.
  If the user already has an open session, it destroys the session and redirects to the homepage.
  */
-exports.postLogin = (req, res, next) => {
+exports.postLogin = (req, res) => {
     if (req.session.isLoggedIn)
         req.session.destroy();
 
     res.redirect('/');
 }
-
-exports.getMain = (req, res, next) => {
+/**
+ *  a middleware function that is executed when a GET request is made to the
+ *  '/admin/after-login' route. It checks if the user has an active session by checking the
+ *  'isLoggedIn' property on the session object. If the session is active,the user is welcomed by name.
+ *  If the session is not active, the user is redirected to the login page and a message is set in the cookie to inform
+ *  the user that their session has expired.
+ **/
+exports.getMain = (req, res) => {
     if (req.session.isLoggedIn) {
         let message = null
         message = `Welcome, ${req.session.name}.`;
@@ -149,12 +157,11 @@ exports.getMain = (req, res, next) => {
     }
 };
 /**
- *  a middleware function that is executed when a GET request is made to the
- *  '/admin/after-login' route. It checks if the user has an active session by checking the
- *  'isLoggedIn' property on the session object. If the session is active,the user is welcomed by name.
- *  If the session is not active, the user is redirected to the login page and a message is set in the cookie to inform
- *  the user that their session has expired.
- **/
+ postMain is a middleware function that handles login attempts.
+ It checks if the provided email and password match a registered user,
+ sets session variables and redirects to the main page on success.
+ On failure, it sets an error message in a cookie and redirects to the login page.
+ */
 exports.postMain = async (req, res) => {
     const cookies = new Cookies(req, res, {keys: keys});
     try { //converting email to lowercase since we want email field to be case-insensitive.
@@ -175,8 +182,11 @@ exports.postMain = async (req, res) => {
         res.redirect('/');
     }
 };
-
-exports.getRegisterPassword = (req, res, next) => {
+/**
+ * This function handles a route in an Express.js application, checking if the user is logged in. If they are,
+ * they are redirected to "/admin/get-main", otherwise they are shown the "register-password" template.
+ */
+exports.getRegisterPassword = (req, res) => {
     if (req.session.isLoggedIn)
         res.redirect("/admin/get-main");
     else
@@ -186,8 +196,13 @@ exports.getRegisterPassword = (req, res, next) => {
             path: '/admin/register-password',
         });
 };
-
-exports.postRegisterPassword = async (req, res, next) => {
+/**
+ * This function handles a route in an Express.js application, it checks if the user already exist in the system,
+ * if the passwords match, validate the data and creates a new user with the email, firstname, lastname and hashed
+ * password if the email is not taken, otherwise it throw an error message.
+ * It also set a cookie message to confirm the registration if the registration is successful.
+ */
+exports.postRegisterPassword = async (req, res) => {
     try {
         const cookies = new Cookies(req, res, {keys: keys});
         const user = cookies.get('user');
@@ -230,7 +245,13 @@ exports.postRegisterPassword = async (req, res, next) => {
         });
     }
 };
-
+/**
+ * @param cookies - Cookies from the user
+ * @param dynamicMessage - The message we want to add to the cookies
+ * @param seconds - Message's max age
+ * This function receives Cookies, dynamic message, seconds and sets the dynamic message on the cookies for the given
+ * number of seconds.
+ */
 const setCookieMessage = (cookies, dynamicMessage, seconds) => {
     const Message = {dynamicMessage: dynamicMessage}
     cookies.set('dynamicMessage', JSON.stringify(Message), {singed: true, maxAge: seconds * 1000});

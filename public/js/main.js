@@ -347,6 +347,7 @@ let messagesManagement = {};
     }
 
     function validateOrThrow(id, dynamicMsg, response) {
+
         if (isValid) {
             displayResponse(dynamicMsg, response.message)
             loadComments(id, dynamicMsg)
@@ -354,6 +355,7 @@ let messagesManagement = {};
         else throw new Error(response.message);
     }
     function handleResponse(response) {
+
         isValid = true;
         if (response.ok) {
             return response.json();
